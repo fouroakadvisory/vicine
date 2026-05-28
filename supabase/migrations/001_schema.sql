@@ -17,8 +17,7 @@ create table public.pre_approved_emails (
   community_id uuid not null references public.communities(id) on delete cascade,
   email text not null,
   added_at timestamptz default now(),
-  claimed_at timestamptz,
-  unique(community_id, lower(email))
+  claimed_at timestamptz
 );
 
 -- Community memberships
@@ -141,4 +140,4 @@ create policy "Users can update their own profile" on public.member_profiles
 create index on public.community_members (community_id, status);
 create index on public.community_members (user_id);
 create index on public.member_profiles (community_id);
-create index on public.pre_approved_emails (community_id, lower(email));
+create unique index on public.pre_approved_emails (community_id, lower(email));
