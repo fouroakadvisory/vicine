@@ -1,26 +1,41 @@
 @import "tailwindcss";
 
+@theme {
+  /* Forest green scale */
+  --color-forest-50: #f0f7f2;
+  --color-forest-100: #d3e9d9;
+  --color-forest-200: #a7d3b3;
+  --color-forest-300: #7bbf8d;
+  --color-forest-400: #4faa67;
+  --color-forest-500: #289649;
+  --color-forest-600: #1a7a3c;
+  --color-forest-700: #155f2f;
+  --color-forest-800: #104522;
+  --color-forest-900: #0a2b15;
+
+  /* Gold scale */
+  --color-gold-50: #fef8e7;
+  --color-gold-100: #fdefc1;
+  --color-gold-200: #fbdf83;
+  --color-gold-300: #f9cf45;
+  --color-gold-400: #f7bf0a;
+  --color-gold-500: #f2a900;
+  --color-gold-600: #d49200;
+  --color-gold-700: #a87200;
+  --color-gold-800: #7c5400;
+  --color-gold-900: #503600;
+}
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --foreground: #0f0f0f;
+  --muted: #f4f4f4;
+  --muted-foreground: #6b6b6b;
+  --border: #e5e5e5;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
