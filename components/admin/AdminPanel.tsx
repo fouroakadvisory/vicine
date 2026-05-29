@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   Check,
   X,
@@ -73,7 +72,6 @@ export default function AdminPanel({
   preApproved: initialPreApproved,
   inviteLink,
 }: AdminPanelProps) {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>(
     fields.length === 0 ? "fields" : "pending"
   );
@@ -93,7 +91,6 @@ export default function AdminPanel({
     });
     if (res.ok) {
       setPending((prev) => prev.filter((m) => m.id !== memberId));
-      router.refresh();
     }
     setActionLoading(null);
   }
@@ -113,7 +110,6 @@ export default function AdminPanel({
     });
     if (res.ok) {
       setNewEmailsText("");
-      router.refresh();
     }
     setAddingEmails(false);
   }

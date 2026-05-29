@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { CommunityField, FieldType } from "@/lib/types";
 import { FIELD_PRESETS } from "@/lib/types";
@@ -66,7 +65,6 @@ export default function FieldBuilder({
   communityId,
   initialFields,
 }: FieldBuilderProps) {
-  const router = useRouter();
   const [fields, setFields] = useState<CommunityField[]>(initialFields);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<FieldFormState>(DEFAULT_FORM);
@@ -109,7 +107,6 @@ export default function FieldBuilder({
           .eq("id", f.id)
       )
     );
-    router.refresh();
   }
 
   function startEdit(field: CommunityField) {
@@ -161,7 +158,6 @@ export default function FieldBuilder({
       setEditingId(null);
     }
     setSaving(false);
-    router.refresh();
   }
 
   async function handleAdd() {
@@ -199,7 +195,6 @@ export default function FieldBuilder({
       setShowAddForm(false);
     }
     setSaving(false);
-    router.refresh();
   }
 
   async function applyPreset(presetKey: string) {
@@ -232,7 +227,6 @@ export default function FieldBuilder({
     }
     setShowPresets(false);
     setApplyingPreset(null);
-    router.refresh();
   }
 
   return (
