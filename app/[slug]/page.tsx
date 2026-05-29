@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { maskProfile } from "@/lib/visibility";
 import type { CommunityField, MemberProfile } from "@/lib/types";
 import { MemberCard } from "@/components/directory/MemberCard";
@@ -13,6 +14,7 @@ export default async function DirectoryPage({
 }) {
   const { slug } = await params;
   const supabase = await createClient();
+  const db = createAdminClient();
 
   const {
     data: { user },
@@ -20,7 +22,7 @@ export default async function DirectoryPage({
   if (!user) redirect(`/auth/login?redirect=/${slug}`);
 
   // Load community
-  const { data: community } = await supabase
+  const { data: community } = await db
     .from("communities")
     .select("*")
     .eq("slug", slug)
@@ -40,7 +42,7 @@ export default async function DirectoryPage({
   }
 
   // Check membership
-  const { data: membership } = await supabase
+  const { data: membership } = await db
     .from("community_members")
     .select("status, role")
     .eq("community_id", community.id)
@@ -64,7 +66,7 @@ export default async function DirectoryPage({
   }
 
   // Load community fields
-  const { data: fieldsData } = await supabase
+  const { data: fieldsData } = await db
     .from("community_fields")
     .select("*")
     .eq("community_id", community.id)
@@ -73,7 +75,7 @@ export default async function DirectoryPage({
   const fields = (fieldsData ?? []) as CommunityField[];
 
   // Load approved member user IDs
-  const { data: approvedMembers } = await supabase
+  const { data: approvedMembers } = await db
     .from("community_members")
     .select("user_id")
     .eq("community_id", community.id)
@@ -83,7 +85,7 @@ export default async function DirectoryPage({
 
   // Load all profiles for this community, then filter client-side:
   // approved claimed members + unclaimed admin-imported profiles
-  const { data: allProfiles } = await supabase
+  const { data: allProfiles } = await db
     .from("member_profiles")
     .select("*")
     .eq("community_id", community.id);

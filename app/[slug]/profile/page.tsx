@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import ProfileForm from "@/components/profile/ProfileForm";
 import type { CommunityField } from "@/lib/types";
 import { MapPin, ArrowLeft } from "lucide-react";
@@ -12,13 +13,14 @@ export default async function ProfilePage({
 }) {
   const { slug } = await params;
   const supabase = await createClient();
+  const db = createAdminClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect(`/auth/login?redirect=/${slug}/profile`);
 
-  const { data: community } = await supabase
+  const { data: community } = await db
     .from("communities")
     .select("id, name")
     .eq("slug", slug)
@@ -26,7 +28,7 @@ export default async function ProfilePage({
 
   if (!community) redirect("/");
 
-  const { data: membership } = await supabase
+  const { data: membership } = await db
     .from("community_members")
     .select("status")
     .eq("community_id", community.id)
@@ -36,7 +38,7 @@ export default async function ProfilePage({
   if (!membership || membership.status !== "approved") redirect(`/${slug}`);
 
   // Load community fields
-  const { data: fieldsData } = await supabase
+  const { data: fieldsData } = await db
     .from("community_fields")
     .select("*")
     .eq("community_id", community.id)
@@ -44,7 +46,7 @@ export default async function ProfilePage({
 
   const fields = (fieldsData ?? []) as CommunityField[];
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from("member_profiles")
     .select("*")
     .eq("community_id", community.id)

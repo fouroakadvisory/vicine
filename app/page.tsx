@@ -2,14 +2,16 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { MapPin, Users, Shield, Eye } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export default async function LandingPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const db = createAdminClient();
 
   if (user) {
-    // Find all communities this user belongs to
-    const { data: memberships } = await supabase
+    // Use the admin client for DB queries so RLS never blocks based on cookie state
+    const { data: memberships } = await db
       .from("community_members")
       .select("community_id, status, role")
       .eq("user_id", user.id);
@@ -18,8 +20,7 @@ export default async function LandingPage() {
     const pending = memberships?.filter((m) => m.status === "pending") ?? [];
 
     if (approved.length === 1) {
-      // Single community — go straight there
-      const { data: community } = await supabase
+      const { data: community } = await db
         .from("communities")
         .select("slug")
         .eq("id", approved[0].community_id)
@@ -28,8 +29,7 @@ export default async function LandingPage() {
     }
 
     if (approved.length > 1) {
-      // Multiple communities — show picker
-      const { data: communities } = await supabase
+      const { data: communities } = await db
         .from("communities")
         .select("id, name, slug")
         .in("id", approved.map((m) => m.community_id));

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import AdminPanel from "@/components/admin/AdminPanel";
 import { MapPin, ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -13,13 +14,14 @@ export default async function AdminPage({
 }) {
   const { slug } = await params;
   const supabase = await createClient();
+  const db = createAdminClient();
 
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await db.auth.getUser();
   if (!user) redirect(`/auth/login`);
 
-  const { data: community } = await supabase
+  const { data: community } = await db
     .from("communities")
     .select("*")
     .eq("slug", slug)
@@ -28,7 +30,7 @@ export default async function AdminPage({
   if (!community) redirect("/");
 
   // Verify admin
-  const { data: membership } = await supabase
+  const { data: membership } = await db
     .from("community_members")
     .select("role, status")
     .eq("community_id", community.id)
@@ -44,7 +46,7 @@ export default async function AdminPage({
   }
 
   // Load community fields
-  const { data: fieldsData } = await supabase
+  const { data: fieldsData } = await db
     .from("community_fields")
     .select("*")
     .eq("community_id", community.id)
@@ -62,7 +64,7 @@ export default async function AdminPage({
   }
 
   // Load pending members + their profiles
-  const { data: pendingMembers } = await supabase
+  const { data: pendingMembers } = await db
     .from("community_members")
     .select("id, user_id, joined_at")
     .eq("community_id", community.id)
@@ -72,14 +74,14 @@ export default async function AdminPage({
   const pendingUserIds = (pendingMembers ?? []).map((m) => m.user_id);
 
   const { data: pendingProfiles } = pendingUserIds.length
-    ? await supabase
+    ? await db
         .from("member_profiles")
         .select("user_id, email, data")
         .in("user_id", pendingUserIds)
     : { data: [] };
 
   // Load approved members + their profiles
-  const { data: approvedMembers } = await supabase
+  const { data: approvedMembers } = await db
     .from("community_members")
     .select("id, user_id, role, joined_at, approved_at")
     .eq("community_id", community.id)
@@ -89,14 +91,14 @@ export default async function AdminPage({
   const approvedUserIds = (approvedMembers ?? []).map((m) => m.user_id);
 
   const { data: approvedProfiles } = approvedUserIds.length
-    ? await supabase
+    ? await db
         .from("member_profiles")
         .select("user_id, email, data")
         .in("user_id", approvedUserIds)
     : { data: [] };
 
   // Load unclaimed (admin-imported) profiles
-  const { data: unclaimedProfiles } = await supabase
+  const { data: unclaimedProfiles } = await db
     .from("member_profiles")
     .select("id, email, data, invited_at")
     .eq("community_id", community.id)
@@ -104,7 +106,7 @@ export default async function AdminPage({
     .order("invited_at", { ascending: false });
 
   // Load pre-approved emails
-  const { data: preApprovedEmails } = await supabase
+  const { data: preApprovedEmails } = await db
     .from("pre_approved_emails")
     .select("id, email, added_at, claimed_at")
     .eq("community_id", community.id)
