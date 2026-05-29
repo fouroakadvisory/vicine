@@ -1,50 +1,55 @@
-import type { MemberProfile, MaskedProfile, ShareableField } from "./types";
+import type { MemberProfile, CommunityField, MaskedProfile } from "./types";
 
 export function maskProfile(
   profile: MemberProfile,
-  viewerProfile: MemberProfile
+  viewerProfile: MemberProfile,
+  fields: CommunityField[]
 ): MaskedProfile {
-  const viewing = (field: ShareableField) =>
-    profile[`share_${field}` as keyof MemberProfile] === true &&
-    viewerProfile[`share_${field}` as keyof MemberProfile] === true;
+  const visible: Record<string, unknown> = {};
+
+  for (const field of fields) {
+    if (!field.is_shareable) {
+      // Non-shareable fields are always visible to approved members
+      visible[field.id] = profile.data[field.id] ?? null;
+    } else {
+      const memberShares = profile.sharing[field.id] === true;
+      const viewerShares = viewerProfile.sharing[field.id] === true;
+      visible[field.id] = memberShares && viewerShares ? (profile.data[field.id] ?? null) : null;
+    }
+  }
 
   return {
+    profile_id: profile.id,
     user_id: profile.user_id,
-    display_name: viewing("name") ? profile.display_name : null,
-    household_name: viewing("name") ? profile.household_name : null,
-    address: viewing("address") ? profile.address : null,
-    phone: viewing("phone") ? profile.phone : null,
-    contact_email: viewing("email") ? profile.contact_email : null,
-    bio: viewing("bio") ? profile.bio : null,
-    interests: viewing("interests") ? profile.interests : null,
-    kids: viewing("kids") ? profile.kids : null,
-    sharing: {
-      name: profile.share_name,
-      address: profile.share_address,
-      phone: profile.share_phone,
-      email: profile.share_email,
-      kids: profile.share_kids,
-      interests: profile.share_interests,
-      bio: profile.share_bio,
-    },
-    viewer_sharing: {
-      name: viewerProfile.share_name,
-      address: viewerProfile.share_address,
-      phone: viewerProfile.share_phone,
-      email: viewerProfile.share_email,
-      kids: viewerProfile.share_kids,
-      interests: viewerProfile.share_interests,
-      bio: viewerProfile.share_bio,
-    },
+    email: profile.email,
+    is_claimed: profile.is_claimed,
+    visible,
+    sharing: profile.sharing,
+    viewer_sharing: viewerProfile.sharing,
   };
 }
 
-export const FIELD_LABELS: Record<ShareableField, string> = {
-  name: "Name",
-  address: "Address",
-  phone: "Phone",
-  email: "Email",
-  kids: "Kids",
-  interests: "Interests",
-  bio: "About",
-};
+// Get display name for a profile -- looks for common name fields in priority order
+export function getDisplayName(profile: MemberProfile | MaskedProfile, fields: CommunityField[]): string {
+  const nameFields = ["display_name", "player_name", "name", "household_name"];
+  const data = "data" in profile ? profile.data : profile.visible;
+
+  for (const name of nameFields) {
+    const field = fields.find((f) => f.name === name);
+    if (field) {
+      const val = data[field.id];
+      if (val && typeof val === "string") return val;
+    }
+  }
+  return "";
+}
+
+export function getInitials(displayName: string): string {
+  if (!displayName) return "?";
+  return displayName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}

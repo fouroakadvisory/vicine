@@ -2,12 +2,11 @@
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { MapPin } from "lucide-react";
 
 function SignupForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const communitySlug = searchParams.get("community");
 
@@ -52,12 +51,12 @@ function SignupForm() {
       }
       const data = await res.json();
       if (data.status === "approved") {
-        router.push(`/${communitySlug}`);
+        window.location.href = `/${communitySlug}`;
       } else {
-        router.push(`/auth/pending?community=${communitySlug}`);
+        window.location.href = `/auth/pending?community=${communitySlug}`;
       }
     } else {
-      router.push("/");
+      window.location.href = "/";
     }
   }
 

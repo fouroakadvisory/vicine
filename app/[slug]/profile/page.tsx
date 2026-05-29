@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ProfileForm from "@/components/profile/ProfileForm";
+import type { CommunityField } from "@/lib/types";
 import { MapPin, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
@@ -12,7 +13,9 @@ export default async function ProfilePage({
   const { slug } = await params;
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) redirect(`/auth/login?redirect=/${slug}/profile`);
 
   const { data: community } = await supabase
@@ -32,6 +35,15 @@ export default async function ProfilePage({
 
   if (!membership || membership.status !== "approved") redirect(`/${slug}`);
 
+  // Load community fields
+  const { data: fieldsData } = await supabase
+    .from("community_fields")
+    .select("*")
+    .eq("community_id", community.id)
+    .order("sort_order");
+
+  const fields = (fieldsData ?? []) as CommunityField[];
+
   const { data: profile } = await supabase
     .from("member_profiles")
     .select("*")
@@ -43,7 +55,10 @@ export default async function ProfilePage({
     <div className="min-h-screen bg-slate-50">
       <header className="bg-white border-b border-slate-200 px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <Link href={`/${slug}`} className="text-slate-400 hover:text-slate-700 transition-colors">
+          <Link
+            href={`/${slug}`}
+            className="text-slate-400 hover:text-slate-700 transition-colors"
+          >
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <div className="flex items-center gap-2">
@@ -61,12 +76,22 @@ export default async function ProfilePage({
           </p>
         </div>
 
-        <ProfileForm
-          communityId={community.id}
-          communitySlug={slug}
-          userId={user.id}
-          initialProfile={profile}
-        />
+        {fields.length > 0 ? (
+          <ProfileForm
+            communityId={community.id}
+            communitySlug={slug}
+            userId={user.id}
+            fields={fields}
+            initialProfile={profile}
+          />
+        ) : (
+          <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
+            <p className="text-sm text-slate-500">
+              Your community admin hasn&apos;t configured any profile fields yet.
+            </p>
+            <p className="text-xs text-slate-400 mt-1">Check back soon.</p>
+          </div>
+        )}
       </main>
     </div>
   );
