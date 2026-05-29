@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import ProfileForm from "@/components/profile/ProfileForm";
 import type { CommunityField } from "@/lib/types";
-import { MapPin, ArrowLeft } from "lucide-react";
+import { MapPin, ArrowLeft, UserCog } from "lucide-react";
 import Link from "next/link";
 
 export default async function ProfilePage({
@@ -30,12 +30,14 @@ export default async function ProfilePage({
 
   const { data: membership } = await db
     .from("community_members")
-    .select("status")
+    .select("status, role")
     .eq("community_id", community.id)
     .eq("user_id", user.id)
     .single();
 
   if (!membership || membership.status !== "approved") redirect(`/${slug}`);
+
+  const isAdmin = membership.role === "admin";
 
   // Load community fields
   const { data: fieldsData } = await db
@@ -56,17 +58,28 @@ export default async function ProfilePage({
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="bg-white border-b border-slate-200 px-6 py-4">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <Link
-            href={`/${slug}`}
-            className="text-slate-400 hover:text-slate-700 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-forest-600" />
-            <span className="font-semibold text-slate-900">{community.name}</span>
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link
+              href={`/${slug}`}
+              className="text-slate-400 hover:text-slate-700 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Link>
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-forest-600" />
+              <span className="font-semibold text-slate-900">{community.name}</span>
+            </div>
           </div>
+          {isAdmin && (
+            <Link
+              href={`/${slug}/admin`}
+              className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 transition-colors"
+            >
+              <UserCog className="w-4 h-4" />
+              Admin
+            </Link>
+          )}
         </div>
       </header>
 

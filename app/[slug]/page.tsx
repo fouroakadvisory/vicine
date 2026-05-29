@@ -94,12 +94,18 @@ export default async function DirectoryPage({
     (p) => !p.user_id || approvedSet.has(p.user_id)
   );
 
-  const viewerProfile = profiles.find((p) => p.user_id === user.id);
-
-  if (!viewerProfile) {
-    // Approved member but no profile row yet -- send to profile setup
-    redirect(`/${slug}/profile`);
-  }
+  const viewerProfile = profiles.find((p) => p.user_id === user.id) ?? {
+    id: "",
+    community_id: community.id,
+    user_id: user.id,
+    email: user.email ?? "",
+    data: {},
+    sharing: {},
+    is_claimed: true,
+    invited_at: null,
+    claimed_at: null,
+    updated_at: new Date().toISOString(),
+  } as MemberProfile;
 
   const maskedProfiles = profiles.map((p) => maskProfile(p, viewerProfile, fields));
 
