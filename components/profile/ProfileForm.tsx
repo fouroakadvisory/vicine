@@ -138,7 +138,7 @@ export default function ProfileForm({
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <h2 className="text-sm font-medium text-slate-500">
-            How you appear to neighbors
+            How you appear to neighbors sharing the same fields
           </h2>
           <span className="text-xs text-slate-400">(live preview)</span>
         </div>
