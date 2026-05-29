@@ -96,6 +96,7 @@ export default async function ProfilePage({
             communityId={community.id}
             communitySlug={slug}
             userId={user.id}
+            userEmail={user.email ?? ""}
             fields={fields}
             initialProfile={profile}
           />

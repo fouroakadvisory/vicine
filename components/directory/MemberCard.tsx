@@ -83,7 +83,7 @@ function FieldValue({ field, value }: { field: CommunityField; value: unknown })
     return (
       <div className="text-sm text-slate-600">
         <span className="text-xs text-slate-400 mr-1">{field.label}:</span>
-        <a href={`tel:${display}`} className="hover:text-forest-600">{display}</a>
+        <a href={`tel:${display}`} className="text-slate-600 no-underline hover:text-forest-600 transition-colors">{display}</a>
       </div>
     );
   }
@@ -92,7 +92,7 @@ function FieldValue({ field, value }: { field: CommunityField; value: unknown })
     return (
       <div className="text-sm text-slate-600">
         <span className="text-xs text-slate-400 mr-1">{field.label}:</span>
-        <a href={`mailto:${display}`} className="hover:text-forest-600 truncate">{display}</a>
+        <a href={`mailto:${display}`} className="text-slate-600 no-underline hover:text-forest-600 transition-colors truncate">{display}</a>
       </div>
     );
   }
@@ -101,7 +101,7 @@ function FieldValue({ field, value }: { field: CommunityField; value: unknown })
     return (
       <div className="text-sm text-slate-600">
         <span className="text-xs text-slate-400 mr-1">{field.label}:</span>
-        <a href={display} target="_blank" rel="noopener noreferrer" className="hover:text-forest-600 truncate">{display}</a>
+        <a href={display} target="_blank" rel="noopener noreferrer" className="text-slate-600 no-underline hover:text-forest-600 transition-colors truncate">{display}</a>
       </div>
     );
   }

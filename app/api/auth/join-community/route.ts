@@ -68,12 +68,16 @@ export async function POST(request: NextRequest) {
       .eq("id", preApproved.id);
   }
 
-  // Create blank profile
-  await supabase.from("member_profiles").insert({
-    community_id: community.id,
-    user_id: user.id,
-    contact_email: email,
-  });
+  // Create blank profile (upsert guards against duplicate calls)
+  await supabase.from("member_profiles").upsert(
+    {
+      community_id: community.id,
+      user_id: user.id,
+      email: email.toLowerCase(),
+      is_claimed: false,
+    },
+    { onConflict: "community_id,user_id" }
+  );
 
   return NextResponse.json({ status: isPreApproved ? "approved" : "pending" });
 }
